@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Unlicensed
 
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.9;
 interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint value);
     event Transfer(address indexed from, address indexed to, uint value);
@@ -685,7 +685,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         antiquitiesWallet = _antiquitiesWallet;
         gasWallet = _gasWallet;
 
-        rareSwapRouter = IRARESwapRouter(0x25bFB54D3476bfcee2da42894957e8e52Fed35fD); //RareSwap Router 0x027bC3A29990aAED16F65a08C8cc3A92E0AFBAA4
+        rareSwapRouter = IRARESwapRouter(0x027bC3A29990aAED16F65a08C8cc3A92E0AFBAA4); //RareSwap Router 0x027bC3A29990aAED16F65a08C8cc3A92E0AFBAA4
         WETH = rareSwapRouter.WETH();
 
         // Create a uniswap pair for this new token
@@ -707,15 +707,15 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         emit Transfer(address(0), _msgSender(), _tTotal);
     }
 
-    function name() public view override returns (string memory) {
+    function name() public view returns (string memory) {
         return _name;
     }
 
-    function symbol() public view override returns (string memory) {
+    function symbol() public view returns (string memory) {
         return _symbol;
     }
 
-    function decimals() public view override returns (uint8) {
+    function decimals() public view returns (uint8) {
         return _decimals;
     }
 
@@ -793,6 +793,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
     }
 
     function excludeFromReward(address account) public onlyOwner() {
+        // require(account != 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D, 'We can not exclude Uniswap router.');
         require(!_isExcluded[account], "Account is already excluded");
         if(_rOwned[account] > 0) {
             _tOwned[account] = tokenFromReflection(_rOwned[account]);
@@ -813,8 +814,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
             }
         }
     }
-    
-    function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
+        function _transferBothExcluded(address sender, address recipient, uint256 tAmount) private {
         (uint256 rAmount, uint256 rTransferAmount, uint256 rFee, uint256 tTransferAmount, uint256 tFee, uint256 tLiquidity) = _getValues(tAmount);
         _tOwned[sender] = _tOwned[sender].sub(tAmount);
         _rOwned[sender] = _rOwned[sender].sub(rAmount);
