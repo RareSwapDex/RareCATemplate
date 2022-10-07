@@ -1,7 +1,3 @@
-/**
- *Submitted for verification at Etherscan.io on 2022-08-20
-*/
-
 // SPDX-License-Identifier: Unlicensed
 
 pragma solidity ^0.8.9;
@@ -849,7 +845,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         antiquitiesWallet = walletAddress;
     }
 
-        function setGasWallet(address walletAddress) public onlyOwner {
+    function setGasWallet(address walletAddress) public onlyOwner {
         gasWallet = walletAddress;
     }
 
@@ -1095,8 +1091,8 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
             IERC20(token).transferFrom(msg.sender, address(this), amount); // _marketingFee + _antiquitiesFee antiquitiesWallet + _gasFee gasWallet
             // calculate individual tax amount
             uint256 marketingAmount = (amount * _marketingFee) / (_marketingFee + _antiquitiesFee + _gasFee);
-            uint256 antiquitiesAmount = amount - marketingAmount;
-            uint256 gasAmount = amount - marketingAmount;
+            uint256 antiquitiesAmount = (amount * _antiquitiesFee) / (_marketingFee + _antiquitiesFee + _gasFee);
+            uint256 gasAmount = amount - marketingAmount - antiquitiesAmount;
             // send WETH to respective wallet
             IERC20(token).transfer(marketingWallet, marketingAmount); 
             IERC20(token).transfer(antiquitiesWallet, antiquitiesAmount);
