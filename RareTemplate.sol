@@ -644,7 +644,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
     address public gasWallet;  // gas Wallet address
 
     string private _name = "The Rare Antiquities Token";
-    string private _symbol = "RAT";
+    string private _symbol = "TRAT";
     uint8 private _decimals = 9;
      
     uint256 private _taxFee = 100;    // reflection tax in BPS
