@@ -1,0 +1,31 @@
+{
+  "root": true,
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "ignorePatterns": ["node_modules/**/*"],
+  "extends": [
+    "prettier",
+    "prettier/react",
+    "prettier/@typescript-eslint",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "rules": {
+    // Typescript
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["warn"],
+    "no-shadow": "off",
+    // React
+    "react/jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
+    "react/prop-types": 0,
+    "react/jsx-props-no-spreading": 0,
+    "react/no-multi-comp": 0,
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}
