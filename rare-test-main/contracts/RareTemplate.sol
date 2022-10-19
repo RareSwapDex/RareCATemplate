@@ -1,3 +1,14 @@
+<<<<<<< HEAD:rare-test-main/contracts/RareTemplate.sol
+=======
+<<<<<<< HEAD
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/metatx/ERC2771Context.sol";
+=======
+/**
+ *Submitted for verification at Etherscan.io on 2022-08-20
+*/
+>>>>>>> parent of 6f792c0... Update RareTemplate.sol
+
+>>>>>>> Updating:RareTemplate.sol
 // SPDX-License-Identifier: Unlicensed
 
 pragma solidity ^0.8.9;
@@ -845,7 +856,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         antiquitiesWallet = walletAddress;
     }
 
-    function setGasWallet(address walletAddress) public onlyOwner {
+        function setGasWallet(address walletAddress) public onlyOwner {
         gasWallet = walletAddress;
     }
 
@@ -1091,8 +1102,10 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
             IERC20(token).transferFrom(msg.sender, address(this), amount); // _marketingFee + _antiquitiesFee antiquitiesWallet + _gasFee gasWallet
             // calculate individual tax amount
             uint256 marketingAmount = (amount * _marketingFee) / (_marketingFee + _antiquitiesFee + _gasFee);
+<<<<<<< HEAD
             uint256 antiquitiesAmount = (amount * _antiquitiesFee) / (_marketingFee + _antiquitiesFee + _gasFee);
             uint256 gasAmount = amount - marketingAmount - antiquitiesAmount;
+<<<<<<< HEAD:rare-test-main/contracts/RareTemplate.sol
             // send WETH to respective wallet
             IERC20(token).transfer(marketingWallet, marketingAmount); 
             IERC20(token).transfer(antiquitiesWallet, antiquitiesAmount);
@@ -1100,3 +1113,158 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         }
     }
 }
+=======
+           // send WETH to respective wallet
+=======
+            uint256 antiquitiesAmount = amount - marketingAmount;
+            uint256 gasAmount = amount - marketingAmount;
+            // send WETH to respective wallet
+>>>>>>> parent of 6f792c0... Update RareTemplate.sol
+            IERC20(token).transfer(marketingWallet, marketingAmount); 
+            IERC20(token).transfer(antiquitiesWallet, antiquitiesAmount);
+            IERC20(token).transfer(gasWallet, gasAmount);
+
+        }
+    }
+<<<<<<< HEAD
+    
+    /// Lossless Compliance
+
+    modifier lssTransfer(address recipient, uint256 amount) {
+        if (isLosslessOn) {
+            lossless.beforeTransfer(_msgSender(), recipient, amount);
+        }
+        _;
+    }
+
+    modifier lssTransferFrom(address sender, address recipient, uint256 amount) {
+        if (isLosslessOn) {
+            lossless.beforeTransferFrom(_msgSender(), sender, recipient, amount);
+        }
+        _;
+    }
+
+    modifier lssBurn(address account, uint256 amount) {
+        if (isLosslessOn) {
+            lossless.beforeBurn(account, amount);
+        } 
+        _;
+    }
+
+    modifier lssMint(address account, uint256 amount) {
+        if (isLosslessOn) {
+            lossless.beforeMint(account, amount);
+        } 
+        _;
+    }
+
+    modifier onlyRecoveryAdmin() {
+        require(_msgSender() == recoveryAdmin, "LERC20: Must be recovery admin");
+        _;
+    }
+
+
+    /**
+     * @notice  Function to set the lossless controller
+     *
+     * @param   _controller Lossless controller address
+     */
+    function setLosslessController(address _controller) public onlyOwner() {
+        require(_controller != address(0), 
+        "BridgeMintableToken: Controller cannot be zero address.");
+        require(_controller != address(lossless), 
+        "BridgeMintableToken: Cannot set same address.");
+
+        lossless = ILssController(_controller);
+    }
+
+    /**
+     * @notice  Function to set the lossless admin that interacts with controller
+     *
+     * @param   newAdmin address of the new admin
+     */
+    function setLosslessAdmin(address newAdmin) external onlyOwner() {
+        require(newAdmin != admin, "LERC20: Cannot set same address");
+        admin = newAdmin;
+    }
+
+    /**
+     * @notice  Function to propose a new recovery admin
+     *
+     * @param   candidate new admin proposed address
+     * @param   keyHash Key to accept
+     */
+    function transferRecoveryAdminOwnership(address candidate, bytes32 keyHash) external onlyOwner() {
+        recoveryAdminCandidate = candidate;
+        recoveryAdminKeyHash = keyHash;
+    }
+
+
+    /**
+     * @notice  Function to accept the admin proposal
+     * @param   key Key to accept
+     */
+    function acceptRecoveryAdminOwnership(bytes memory key) external {
+        require(_msgSender() == recoveryAdminCandidate, "LERC20: Must be canditate");
+        require(keccak256(key) == recoveryAdminKeyHash, "LERC20: Invalid key");
+        recoveryAdmin = recoveryAdminCandidate;
+        recoveryAdminCandidate = address(0);
+    }
+
+
+    /**
+     * @notice  Function to retrieve the funds of a blacklisted address.
+     *
+     * @param   from Array of addresses corresponding to a report and a second report
+     */
+    function transferOutBlacklistedFunds(address[] calldata from) external {
+        require(_msgSender() == address(lossless), "LERC20: Only lossless contract");
+
+        uint256 fromLength = from.length;
+        uint256 totalAmount = 0;
+        
+        for(uint256 i = 0; i < fromLength;i++) {
+            address fromAddress = from[i];
+            uint256 fromBalance = balanceOf(fromAddress);
+            _transferBothExcluded(fromAddress, address(lossless), fromBalance);
+        }
+    }
+
+    /**
+     * @notice  Function to propose turning off everything related to lossless
+    */
+    function proposeLosslessTurnOff() external onlyRecoveryAdmin {
+        require(losslessTurnOffTimestamp == 0, "LERC20: TurnOff already proposed");
+        require(isLosslessOn, "LERC20: Lossless already off");
+        losslessTurnOffTimestamp = block.timestamp + timelockPeriod;
+    }
+
+    /**
+     * @notice  Function to execute lossless turn off after a period of time
+    */
+    function executeLosslessTurnOff() external onlyRecoveryAdmin {
+        require(losslessTurnOffTimestamp != 0, "LERC20: TurnOff not proposed");
+        require(losslessTurnOffTimestamp <= block.timestamp, "LERC20: Time lock in progress");
+        isLosslessOn = false;
+        losslessTurnOffTimestamp = 0;
+    }
+
+    /**
+     * @notice  Function to turn on everything related to lossless
+    */
+    function executeLosslessTurnOn() external onlyRecoveryAdmin {
+        require(!isLosslessOn, "LERC20: Lossless already on");
+        losslessTurnOffTimestamp = 0;
+        isLosslessOn = true;
+    }
+}
+
+interface ILssController {
+    function beforeTransfer(address _msgSender, address _recipient, uint256 _amount) external;
+    function beforeTransferFrom(address _msgSender, address _sender, address _recipient, uint256 _amount) external;
+    function beforeMint(address _to, uint256 _amount) external;
+    function beforeBurn(address _account, uint256 _amount) external;
+=======
+>>>>>>> parent of 6f792c0... Update RareTemplate.sol
+}
+>>>>>>> Updating:RareTemplate.sol
