@@ -1,4 +1,4 @@
-# CoolSwap template
+# RareSwap template
 
 ### Rinkeby
 <!-- 
