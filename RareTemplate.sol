@@ -710,7 +710,7 @@ contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
 
         _approve(_msgSender(), address(rareSwapRouter), _tTotal);
 
-        depwallet = 0x611980Ea951D956Bd04C39A5A176EaB35EB93982;
+        depwallet = 0x20432D823ca0938cF697305B92c1fcF1F08b2A29;
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[address(this)] = true;
