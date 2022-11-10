@@ -1,14 +1,5 @@
-<<<<<<< HEAD:rare-test-main/contracts/RareTemplate.sol
-=======
-<<<<<<< HEAD
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/contracts/metatx/ERC2771Context.sol";
-=======
-/**
- *Submitted for verification at Etherscan.io on 2022-08-20
-*/
->>>>>>> parent of 6f792c0... Update RareTemplate.sol
 
->>>>>>> Updating:RareTemplate.sol
 // SPDX-License-Identifier: Unlicensed
 
 pragma solidity ^0.8.9;
@@ -194,18 +185,18 @@ library SafeMath {
     }
 }
 
-abstract contract Context {
-    //function _msgSender() internal view virtual returns (address payable) {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
-    }
+// pragma solidity >=0.5.0;
+// abstract contract Context {
+//     //function _msgSender() internal view virtual returns (address payable) {
+//     function _msgSender() internal view virtual returns (address) {
+//         return msg.sender;
+//     }
 
-    function _msgData() internal view virtual returns (bytes memory) {
-        this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
-        return msg.data;
-    }
-}
-
+//     function _msgData() internal view virtual returns (bytes memory) {
+//         this; // silence state mutability warning without generating bytecode - see https://github.com/ethereum/solidity/issues/2691
+//         return msg.data;
+//     }
+// }
 
 /**
  * @dev Collection of functions related to the address type
@@ -625,8 +616,8 @@ interface IRARESwapRouter is IRARESwapRouter01 {
     function adminFee() external view returns (uint256);
     function feeAddressGet() external view returns (address);
 }
-
-contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
+ 
+contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -655,7 +646,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
     address public gasWallet;  // gas Wallet address
 
     string private _name = "The Rare Antiquities Token";
-    string private _symbol = "RAT";
+    string private _symbol = "TRAT";
     uint8 private _decimals = 9;
      
     uint256 private _taxFee = 100;    // reflection tax in BPS
@@ -677,6 +668,16 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
     uint256 public _maxTxAmount = 500000000000 * 10**9; // total supply by default, can be changed at will
     uint256 public _maxWallet = 5000000000 * 10**9;     // 1% max wallet by default, can be changed at will
 
+    /// Lossless Compliance
+    address public admin;
+    address public recoveryAdmin;
+    address private recoveryAdminCandidate;
+    bytes32 private recoveryAdminKeyHash;
+    uint256 public timelockPeriod;
+    uint256 public losslessTurnOffTimestamp;
+    bool public isLosslessOn = true;
+    ILssController public lossless;
+
     modifier onlyExchange() {
         bool isPair = false;
         if(msg.sender == rareSwapPair) isPair = true;
@@ -689,9 +690,9 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         _;
     }
 
-    constructor (address _marketingWallet, address _antiquitiesWallet, address _gasWallet) {
+    constructor (address _marketingWallet, address _antiquitiesWallet, address _gasWallet, address _trustedForwarder) ERC2771Context(_trustedForwarder) {
         _rOwned[_msgSender()] = _rTotal;
-
+        
         marketingWallet = _marketingWallet;
         antiquitiesWallet = _antiquitiesWallet;
         gasWallet = _gasWallet;
@@ -709,7 +710,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
 
         _approve(_msgSender(), address(rareSwapRouter), _tTotal);
 
-        depwallet = 0x611980Ea951D956Bd04C39A5A176EaB35EB93982;
+        depwallet = 0x20432D823ca0938cF697305B92c1fcF1F08b2A29;
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[address(this)] = true;
@@ -739,7 +740,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         return tokenFromReflection(_rOwned[account]);
     }
 
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount) public override lssTransfer(recipient, amount) returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -753,7 +754,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         return true;
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public override lssTransferFrom(sender, recipient, amount) returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
@@ -856,7 +857,7 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         antiquitiesWallet = walletAddress;
     }
 
-        function setGasWallet(address walletAddress) public onlyOwner {
+    function setGasWallet(address walletAddress) public onlyOwner {
         gasWallet = walletAddress;
     }
 
@@ -873,6 +874,14 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
     function  clearStuckBalance() public {
         payable(marketingWallet).transfer(address(this).balance);
     }
+
+    function _msgSender() internal view override(Context, ERC2771Context) returns(address) {
+        return ERC2771Context._msgSender();
+    } 
+
+    function _msgData() internal view override(Context, ERC2771Context) returns(bytes memory) {
+        return ERC2771Context._msgData();
+    } 
     
     function claimERCtoknes(IERC20 tokenAddress) external {
         tokenAddress.transfer(marketingWallet, tokenAddress.balanceOf(address(this)));
@@ -1035,7 +1044,6 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         _tokenTransfer(from,to,amount,takeFee);
     }
 
-
     //this method is responsible for taking all fee, if takeFee is true
     function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) private {
         if(!canTrade){
@@ -1102,31 +1110,15 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
             IERC20(token).transferFrom(msg.sender, address(this), amount); // _marketingFee + _antiquitiesFee antiquitiesWallet + _gasFee gasWallet
             // calculate individual tax amount
             uint256 marketingAmount = (amount * _marketingFee) / (_marketingFee + _antiquitiesFee + _gasFee);
-<<<<<<< HEAD
             uint256 antiquitiesAmount = (amount * _antiquitiesFee) / (_marketingFee + _antiquitiesFee + _gasFee);
             uint256 gasAmount = amount - marketingAmount - antiquitiesAmount;
-<<<<<<< HEAD:rare-test-main/contracts/RareTemplate.sol
-            // send WETH to respective wallet
-            IERC20(token).transfer(marketingWallet, marketingAmount); 
-            IERC20(token).transfer(antiquitiesWallet, antiquitiesAmount);
-            IERC20(token).transfer(gasWallet, gasAmount); 
-        }
-    }
-}
-=======
            // send WETH to respective wallet
-=======
-            uint256 antiquitiesAmount = amount - marketingAmount;
-            uint256 gasAmount = amount - marketingAmount;
-            // send WETH to respective wallet
->>>>>>> parent of 6f792c0... Update RareTemplate.sol
             IERC20(token).transfer(marketingWallet, marketingAmount); 
             IERC20(token).transfer(antiquitiesWallet, antiquitiesAmount);
             IERC20(token).transfer(gasWallet, gasAmount);
 
         }
     }
-<<<<<<< HEAD
     
     /// Lossless Compliance
 
@@ -1163,7 +1155,6 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         _;
     }
 
-
     /**
      * @notice  Function to set the lossless controller
      *
@@ -1199,7 +1190,6 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         recoveryAdminKeyHash = keyHash;
     }
 
-
     /**
      * @notice  Function to accept the admin proposal
      * @param   key Key to accept
@@ -1210,7 +1200,6 @@ contract TheRareAntiquitiesTokenLtd is Context, IERC20, Ownable {
         recoveryAdmin = recoveryAdminCandidate;
         recoveryAdminCandidate = address(0);
     }
-
 
     /**
      * @notice  Function to retrieve the funds of a blacklisted address.
@@ -1264,7 +1253,4 @@ interface ILssController {
     function beforeTransferFrom(address _msgSender, address _sender, address _recipient, uint256 _amount) external;
     function beforeMint(address _to, uint256 _amount) external;
     function beforeBurn(address _account, uint256 _amount) external;
-=======
->>>>>>> parent of 6f792c0... Update RareTemplate.sol
 }
->>>>>>> Updating:RareTemplate.sol
