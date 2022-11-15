@@ -198,6 +198,7 @@ library SafeMath {
 //     }
 // }
 
+
 /**
  * @dev Collection of functions related to the address type
  */
@@ -616,7 +617,9 @@ interface IRARESwapRouter is IRARESwapRouter01 {
     function adminFee() external view returns (uint256);
     function feeAddressGet() external view returns (address);
 }
- 
+
+
+
 contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
@@ -710,7 +713,7 @@ contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
 
         _approve(_msgSender(), address(rareSwapRouter), _tTotal);
 
-        depwallet = 0x20432D823ca0938cF697305B92c1fcF1F08b2A29;
+        depwallet = 0x611980Ea951D956Bd04C39A5A176EaB35EB93982;
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
         _isExcludedFromFee[address(this)] = true;
@@ -1044,6 +1047,7 @@ contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
         _tokenTransfer(from,to,amount,takeFee);
     }
 
+
     //this method is responsible for taking all fee, if takeFee is true
     function _tokenTransfer(address sender, address recipient, uint256 amount,bool takeFee) private {
         if(!canTrade){
@@ -1155,6 +1159,7 @@ contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
         _;
     }
 
+
     /**
      * @notice  Function to set the lossless controller
      *
@@ -1190,6 +1195,7 @@ contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
         recoveryAdminKeyHash = keyHash;
     }
 
+
     /**
      * @notice  Function to accept the admin proposal
      * @param   key Key to accept
@@ -1200,6 +1206,7 @@ contract TheRareAntiquitiesTokenLtd is ERC2771Context, IERC20, Ownable {
         recoveryAdmin = recoveryAdminCandidate;
         recoveryAdminCandidate = address(0);
     }
+
 
     /**
      * @notice  Function to retrieve the funds of a blacklisted address.
